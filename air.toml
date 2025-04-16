@@ -1,0 +1,36 @@
+# air.toml - configuration file for Air (Go live reload tool)
+
+# Base config
+root = "."                     # project root
+tmp_dir = "tmp"                # temporary build path
+delay = 1000                   # delay rebuild in milliseconds
+log = "debug"                  # log level: debug | info | warn | error
+color = true                   # enable color in logs
+testdata = "testdata"          # testdata directory to ignore
+
+[build]
+  cmd = "go build -o tmp/main ."     # build command
+  bin = "tmp/main"                   # binary output path
+  full_bin = "tmp/main"              # binary including relative path
+  include_ext = ["go", "tpl", "tmpl", "html"]  # extensions to watch
+  exclude_dir = ["assets", "tmp", "vendor"]    # directories to ignore
+  exclude_file = []                          # specific files to ignore
+  exclude_regex = ["_test.go"]               # regex patterns to ignore
+  follow_symlink = false
+  kill_delay = 500                         # time to wait before killing the process
+
+[log]
+  time = true                     # show timestamp in logs
+
+[serve]
+  cmd = ""                        # optional custom run command
+  delay = 500                     # wait before restart
+  grace = 500                     # wait before force kill
+  kill_signal = "INT"            # kill signal
+  restart = true                 # restart binary on changes
+
+[watch]
+  dirs = ["."]
+  exclude = ["tmp", "vendor"]
+  extensions = ["go", "tpl", "tmpl", "html"]
+  follow_symlink = false
