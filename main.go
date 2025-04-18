@@ -51,49 +51,8 @@ func main() {
 
 	app := fiber.New()
 
-	app.Get("/api/todos", func(c fiber.Ctx) error {
-		var todos []Todo
-
-		cursor, err := collection.Find(context.Background(), bson.M{})
-
-		if err != nil {
-			return err
-		}
-
-		defer cursor.Close(context.Background())
-
-		for cursor.Next(context.Background()) {
-			var todo Todo
-			if err := cursor.Decode(&todo); err != nil {
-				return err
-			}
-			todos = append(todos, todo)
-		}
-
-		return c.JSON(todos)
-	})
-	app.Post("/api/todos", func(c fiber.Ctx) error {
-		todo := new(Todo)
-
-		if err := c.Bind().JSON(todo); err != nil {
-			return err
-		}
-
-		if todo.Body == "" {
-			return c.Status(400).JSON(fiber.Map{"error": "Todo body can not be empty"})
-		}
-
-		insertResult, err := collection.InsertOne(context.Background(), todo)
-
-		if err != nil {
-			return err
-		}
-
-		todo.ID = insertResult.InsertedID.(primitive.ObjectID)
-
-		return c.Status(201).JSON(todo)
-
-	})
+	app.Get("/api/todos", getTodos)
+	app.Post("/api/todos", createTodo)
 	app.Patch("/api/todos/:id", updateTodo)
 	app.Delete("/api/todos/:id", deleteTodo)
 
@@ -103,6 +62,51 @@ func main() {
 	}
 
 	log.Fatal(app.Listen("127.0.0.1:" + port))
+
+}
+
+func getTodos(c fiber.Ctx) error {
+	var todos []Todo
+
+	cursor, err := collection.Find(context.Background(), bson.M{})
+
+	if err != nil {
+		return err
+	}
+
+	defer cursor.Close(context.Background())
+
+	for cursor.Next(context.Background()) {
+		var todo Todo
+		if err := cursor.Decode(&todo); err != nil {
+			return err
+		}
+		todos = append(todos, todo)
+	}
+
+	return c.JSON(todos)
+}
+
+func createTodo(c fiber.Ctx) error {
+	todo := new(Todo)
+
+	if err := c.Bind().JSON(todo); err != nil {
+		return err
+	}
+
+	if todo.Body == "" {
+		return c.Status(400).JSON(fiber.Map{"error": "Todo body can not be empty"})
+	}
+
+	insertResult, err := collection.InsertOne(context.Background(), todo)
+
+	if err != nil {
+		return err
+	}
+
+	todo.ID = insertResult.InsertedID.(primitive.ObjectID)
+
+	return c.Status(201).JSON(todo)
 
 }
 
